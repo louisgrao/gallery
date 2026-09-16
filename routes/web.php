@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Livewire\ProductCatalog;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route the homepage directly to the catalog component
+Route::get('/', ProductCatalog::class);
