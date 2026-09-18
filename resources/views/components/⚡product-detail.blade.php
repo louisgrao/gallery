@@ -8,8 +8,7 @@ new class extends Component {
 
     public function mount($slug)
     {
-        // Fetch the product and eager-load relationships, or throw a 404 if not found
-        $this->product = Product::with(['artists', 'media', 'variants'])
+        $this->product = Product::with(['artists', 'media', 'variants', 'categories.parent'])
             ->where('url_slug', $slug)
             ->where('product_status', true)
             ->firstOrFail();
@@ -57,18 +56,52 @@ new class extends Component {
                 £{{ number_format($product->base_price) }}
             </p>
 
-            <!-- Add to Cart Action -->
             <button
                 class="w-full py-4 bg-gray-900 text-white text-xs font-medium tracking-[0.2em] hover:bg-black transition-colors mb-10">
                 ADD TO CART
             </button>
 
-            <!-- Description -->
             <div class="border-t border-gray-100 pt-8 mt-4">
                 <h3 class="text-xs font-medium tracking-[0.2em] text-gray-900 mb-4">ABOUT THIS PIECE</h3>
                 <p class="text-sm text-gray-600 leading-relaxed">
                     {{ $product->description ?? 'Original artwork available for purchase. Contact the gallery for detailed condition reports or to arrange a private viewing.' }}
                 </p>
+            </div>
+
+            <!-- Specifications Data Preparation -->
+            @php
+                $variant = $product->variants->first();
+                $attrs = $variant?->attributes ?? [];
+
+                $mediums = $product->categories->where('parent.title', 'Medium')->pluck('title')->join(', ');
+                $locations = $product->categories->where('parent.title', 'Location')->pluck('title')->join(', ');
+            @endphp
+
+            <!-- Specifications -->
+            <div class="border-t border-gray-100 pt-8 mt-8">
+                <h3 class="text-xs font-medium tracking-[0.2em] text-gray-900 mb-4">SPECIFICATIONS</h3>
+                <ul class="text-sm text-gray-600 space-y-3">
+                    @if ($mediums)
+                        <li><span class="font-medium text-gray-900">Medium:</span> {{ $mediums }}</li>
+                    @endif
+
+                    @if (isset($attrs['width']) && isset($attrs['height']))
+                        <li>
+                            <span class="font-medium text-gray-900">Dimensions:</span>
+                            {{ $attrs['width'] }} × {{ $attrs['height'] }}cm @if (isset($attrs['depth']))
+                                × {{ $attrs['depth'] }}cm
+                            @endif
+                        </li>
+                    @endif
+
+                    @if (isset($attrs['framing']))
+                        <li><span class="font-medium text-gray-900">Framing:</span> {{ $attrs['framing'] }}</li>
+                    @endif
+
+                    @if ($locations)
+                        <li><span class="font-medium text-gray-900">Location:</span> {{ $locations }}</li>
+                    @endif
+                </ul>
             </div>
 
         </div>
