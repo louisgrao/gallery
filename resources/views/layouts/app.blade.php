@@ -1,20 +1,24 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="en">
 
     <head>
-        <meta charset="utf-8">
+        <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-        <title>{{ $title ?? config('app.name') }}</title>
-
+        <title>{{ $title ?? 'Woburn Gallery' }}</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-        @livewireStyles
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+        <style>
+            body {
+                font-family: 'Inter', sans-serif;
+            }
+        </style>
     </head>
 
     <body class="bg-white text-gray-900 antialiased min-h-screen flex flex-col">
-        <!-- Alpine.js state wrapper -->
-        <header x-data="{ mobileMenuOpen: false }" class="w-full pt-6 md:pt-12 pb-4 md:pb-6 border-b border-gray-100">
+
+        <!-- Alpine.js state initialized on the header -->
+        <header x-data="{ mobileMenuOpen: false }"
+            class="max-w-[1200px] mx-auto w-full pt-6 md:pt-12 pb-4 md:pb-6 border-b border-gray-100">
 
             <div class="relative flex items-center justify-between md:justify-center mb-4 md:mb-6 px-5 md:px-8">
                 <a href="/"
@@ -22,45 +26,97 @@
                     Woburn Gallery
                 </a>
 
-                <!-- Mobile Right Icons -->
                 <div class="flex items-center space-x-5 md:hidden">
-                    <a href="/cart" class="text-gray-900 hover:opacity-50 transition-opacity" aria-label="Cart">
-                        <!-- Cart SVG here -->
+                    <a href="#" class="text-gray-900 hover:opacity-50 transition-opacity" aria-label="Cart">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1"
+                            stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                        </svg>
                     </a>
 
-                    <!-- Alpine click handler -->
+                    <!-- Alpine click event toggles the menu state -->
                     <button @click="mobileMenuOpen = !mobileMenuOpen"
                         class="text-gray-900 hover:opacity-50 transition-opacity" aria-label="Open menu">
-                        <!-- Hamburger SVG here -->
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-7 h-7">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
                     </button>
                 </div>
 
-                <!-- Utility Icons (Desktop) -->
                 <div
                     class="hidden md:flex absolute right-4 md:right-8 items-center space-x-4 md:space-x-6 text-gray-900">
-                    <!-- Desktop SVGs here -->
+                    <a href="#" class="hover:opacity-50 transition-opacity" aria-label="Account">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1"
+                            stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                        </svg>
+                    </a>
+                    <a href="#" class="hover:opacity-50 transition-opacity" aria-label="Wishlist">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1"
+                            stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                        </svg>
+                    </a>
+                    <a href="#" class="hover:opacity-50 transition-opacity" aria-label="Cart">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1"
+                            stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                        </svg>
+                    </a>
                 </div>
             </div>
 
-            <!-- Navigation (Desktop) -->
             <nav
                 class="hidden md:flex justify-center space-x-6 md:space-x-10 text-[11px] md:text-xs font-medium tracking-[0.2em] text-gray-400">
                 <a href="/" class="hover:text-gray-900 transition-colors duration-300">HOME</a>
                 <a href="/products" class="hover:text-gray-900 transition-colors duration-300">ARTWORK</a>
-                <!-- Other links -->
+                <a href="/artists" class="hover:text-gray-900 transition-colors duration-300">ARTISTS</a>
+                <a href="#" class="hover:text-gray-900 transition-colors duration-300">NEWS</a>
+                <a href="#" class="hover:text-gray-900 transition-colors duration-300">ABOUT</a>
             </nav>
 
             <!-- Alpine visibility toggle -->
             <div x-show="mobileMenuOpen" style="display: none;" class="md:hidden px-6 pb-4 pt-2">
-                <!-- Mobile Menu Links -->
+                <nav class="flex flex-col space-y-5 text-sm font-medium tracking-[0.2em] text-gray-700">
+                    <a href="/" class="hover:text-gray-900 transition-colors">HOME</a>
+                    <a href="/products" class="hover:text-gray-900 transition-colors">ARTWORK</a>
+                    <a href="/artists" class="hover:text-gray-900 transition-colors">ARTISTS</a>
+                    <a href="#" class="hover:text-gray-900 transition-colors">NEWS</a>
+                    <a href="#" class="hover:text-gray-900 transition-colors">ABOUT</a>
+                </nav>
+
+                <div class="flex items-center space-x-6 mt-8 pt-6 border-t border-gray-100 text-gray-700">
+                    <a href="#" class="flex items-center hover:text-gray-900 transition-colors space-x-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1"
+                            stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                        </svg>
+                        <span class="text-xs tracking-[0.1em] font-medium">ACCOUNT</span>
+                    </a>
+                    <a href="#" class="flex items-center hover:text-gray-900 transition-colors space-x-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1"
+                            stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                        </svg>
+                        <span class="text-xs tracking-[0.1em] font-medium">WISHLIST</span>
+                    </a>
+                </div>
             </div>
+
         </header>
 
-        <main class="flex-grow">
+        <main class="max-w-[1200px] mx-auto px-5 md:px-8 py-8 md:py-12">
             {{ $slot }}
         </main>
 
-        @livewireScripts
     </body>
 
 </html>

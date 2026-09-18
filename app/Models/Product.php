@@ -15,6 +15,11 @@ class Product extends Model
         return $this->belongsToMany(Category::class);
     }
 
+    public function artists()
+    {
+        return $this->belongsToMany(Artist::class);
+    }
+    
     public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class);
@@ -27,9 +32,9 @@ class Product extends Model
 
     public function media(): BelongsToMany
     {
-        return $this->belongsToMany(ProductMedia::class)
-                    ->withPivot('position')
-                    ->orderBy('pivot_position', 'asc');
+        return $this->belongsToMany(ProductMedia::class, 'product_media_product')
+                ->withPivot('position')
+                ->orderBy('pivot_position', 'asc');
     }
 
     public function downloads(): HasMany

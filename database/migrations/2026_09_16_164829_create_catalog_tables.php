@@ -19,6 +19,15 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        Schema::create('artists', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('url_slug')->unique();
+            $table->text('bio')->nullable();
+            $table->string('profile_image')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('title');
@@ -31,6 +40,12 @@ return new class extends Migration
             $table->integer('subscription_period')->default(0);
             $table->string('subscription_period_type')->default('day');
             $table->timestamps();
+        });
+
+        Schema::create('artist_product', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('artist_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
         });
 
         Schema::create('product_media', function (Blueprint $table) {
@@ -97,7 +112,9 @@ return new class extends Migration
         Schema::dropIfExists('product_variants');
         Schema::dropIfExists('category_product');
         Schema::dropIfExists('product_media');
+        Schema::dropIfExists('artist_product');
         Schema::dropIfExists('products');
+        Schema::dropIfExists('artists');
         Schema::dropIfExists('categories');
         
     }
