@@ -1,17 +1,65 @@
 <?php
 
 use Livewire\Component;
+use Livewire\Attributes\On;
 use App\Models\Product;
+use App\Services\CartService;
 
 new class extends Component {
     public Product $product;
+    public int $inCartAmount = 0;
 
-    public function mount($slug)
+    public function mount($slug, CartService $cartService)
     {
         $this->product = Product::with(['artists', 'media', 'variants', 'categories.parent'])
             ->where('url_slug', $slug)
             ->where('product_status', true)
             ->firstOrFail();
+
+        $this->checkCartState($cartService);
+    }
+
+    #[On('cart-updated')]
+    public function checkCartState(CartService $cartService)
+    {
+        $variant = $this->product->variants->first();
+        $cart = $cartService->getItems();
+
+        $this->inCartAmount = isset($cart[$variant?->id]) ? $cart[$variant->id]['quantity'] : 0;
+    }
+    /*
+    public function addToCart(CartService $cartService)
+    {
+        // Get the default variant (you can expand this later when adding size/frame selection)
+        $variant = $this->product->variants->first();
+
+        if ($variant) {
+            $success = $cartService->add($variant);
+
+            if ($success) {
+                // Tell the global layout to update the cart counter and open the slide-out
+                $this->dispatch('cart-updated');
+                $this->dispatch('open-cart-drawer');
+            } else {
+                // Optional: Dispatch a front-end notification that stock is maxed out
+                $this->dispatch('notify', message: 'Maximum available stock already in cart.');
+            }
+        }
+    }*/
+
+    public function addToCart(CartService $cartService)
+    {
+        $variant = $this->product->variants->first();
+
+        if ($variant) {
+            $success = $cartService->add($variant);
+
+            if ($success) {
+                $this->checkCartState($cartService);
+                $this->dispatch('cart-updated');
+                $this->dispatch('open-cart-drawer');
+            }
+        }
     }
 }; ?>
 
@@ -55,10 +103,21 @@ new class extends Component {
             <p class="text-2xl font-light text-gray-900 mb-10">
                 £{{ number_format($product->base_price) }}
             </p>
-
-            <button
+            <!--
+            <button wire:click="addToCart"
                 class="w-full py-4 bg-gray-900 text-white text-xs font-medium tracking-[0.2em] hover:bg-black transition-colors mb-10">
                 ADD TO CART
+            </button>
+            -->
+
+            @php
+                $variant = $product->variants->first();
+                $isSoldOut = $variant && $variant->quantity > -1 && $inCartAmount >= $variant->quantity;
+            @endphp
+
+            <button wire:click="addToCart" @if ($isSoldOut) disabled @endif
+                class="w-full py-4 text-xs font-medium tracking-[0.2em] transition-colors mb-10 cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 @if (!$isSoldOut) bg-gray-900 text-white hover:bg-black @endif">
+                {{ $isSoldOut ? 'ALREADY IN CART' : 'ADD TO CART' }}
             </button>
 
             <div class="border-t border-gray-100 pt-8 mt-4">
@@ -68,11 +127,9 @@ new class extends Component {
                 </p>
             </div>
 
-            <!-- Specifications Data Preparation -->
+            <!-- Specifications -->
             @php
-                $variant = $product->variants->first();
                 $attrs = $variant?->attributes ?? [];
-
                 $mediums = $product->categories->where('parent.title', 'Medium')->pluck('title')->join(', ');
                 $locations = $product->categories->where('parent.title', 'Location')->pluck('title')->join(', ');
             @endphp
