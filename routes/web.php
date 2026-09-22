@@ -11,4 +11,5 @@ Route::livewire('/cart', 'cart-page');
 
 Route::prefix('admin')->group(function () {
     Route::livewire('/products', 'admin-product-list');
+    Route::livewire('/products/create', 'admin-product-create'); 
 });

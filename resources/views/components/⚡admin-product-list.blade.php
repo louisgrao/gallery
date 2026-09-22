@@ -34,10 +34,10 @@ new #[Layout('components.layouts.admin')] class extends Component {
             <p class="mt-2 text-sm text-gray-600">Manage gallery inventory, pricing, and availability.</p>
         </div>
         <div class="mt-4 sm:mt-0">
-            <button
-                class="bg-gray-900 text-white px-4 py-2 text-xs font-medium tracking-[0.1em] uppercase hover:bg-black transition-colors">
+            <a href="/admin/products/create"
+                class="inline-block bg-gray-900 text-white px-4 py-2 text-xs font-medium tracking-[0.1em] uppercase hover:bg-black transition-colors">
                 Add Artwork
-            </button>
+            </a>
         </div>
     </div>
 
