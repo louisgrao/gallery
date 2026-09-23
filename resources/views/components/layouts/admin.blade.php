@@ -24,9 +24,9 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#"
+                        <a href="/admin/catalog/accessories"
                             class="block px-6 py-3 text-sm text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">
-                            Artists
+                            Taxonomy & Accessories
                         </a>
                     </li>
                     <li>

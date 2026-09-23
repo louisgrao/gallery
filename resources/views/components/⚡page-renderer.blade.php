@@ -12,7 +12,7 @@ new class extends Component {
     public Page $page;
     public array $activeFilters = [];
 
-    public function mount($slug)
+    public function mount($slug = 'catalog')
     {
         $this->page = Page::where('slug', $slug)->where('is_active', true)->firstOrFail();
 
