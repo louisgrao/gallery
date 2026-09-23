@@ -4,10 +4,9 @@ use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Illuminate\Support\Str;
-use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\Artist;
-use App\Models\Category;
+use App\Models\CatalogItem;
+use App\Models\CatalogVariant;
+use App\Models\CatalogAccessory;
 
 new #[Layout('components.layouts.admin')] class extends Component {
     #[Validate('required|string|max:255')]
@@ -19,76 +18,74 @@ new #[Layout('components.layouts.admin')] class extends Component {
     #[Validate('required|numeric|min:0')]
     public $base_price = '';
 
-    #[Validate('required|array|min:1', message: 'Please select at least one artist.')]
-    public $selectedArtists = [];
-
     #[Validate('array')]
-    public $selectedCategories = [];
+    public $selectedAccessories = [];
 
-    // Variant Specifics
+    // Base Variant Specs (Stored in JSON)
+    public $sku = '';
+    public $quantity = 1;
     public $width = '';
     public $height = '';
     public $depth = '';
     public $framing = 'Unframed';
-    public $quantity = 1;
 
     public function save()
     {
         $this->validate();
 
-        // 1. Create the base product
-        $product = Product::create([
+        // 1. Create the base item
+        $item = CatalogItem::create([
             'title' => $this->title,
-            // Append a short unique ID to the slug to prevent collisions
             'url_slug' => Str::slug($this->title) . '-' . substr(uniqid(), -4),
             'description' => $this->description,
             'base_price' => $this->base_price,
-            'product_status' => true, // Defaulting to active
+            'item_status' => true,
         ]);
 
-        // 2. Attach Many-to-Many Relationships
-        $product->artists()->attach($this->selectedArtists);
-        $product->categories()->attach($this->selectedCategories);
+        // 2. Attach selected accessories
+        if (!empty($this->selectedAccessories)) {
+            $item->accessories()->attach($this->selectedAccessories);
+        }
 
-        // 3. Calculate Volume for Size Sorting
+        // 3. Calculate Volume (if physical dimensions provided)
         $w = (float) $this->width;
         $h = (float) $this->height;
-        $d = !empty($this->depth) ? (float) $this->depth : 1.5; // Default 1.5cm for paintings
+        $d = !empty($this->depth) ? (float) $this->depth : 1.5;
         $volume = $w > 0 && $h > 0 ? $w * $h * $d : 0;
 
         // 4. Create the Default Variant
-        ProductVariant::create([
-            'product_id' => $product->id,
-            'title' => 'Original Artwork',
-            'sku' => 'ART-' . str_pad($product->id, 4, '0', STR_PAD_LEFT),
+        CatalogVariant::create([
+            'catalog_item_id' => $item->id,
+            'title' => 'Default',
+            'sku' => $this->sku ?: 'ITM-' . str_pad($item->id, 4, '0', STR_PAD_LEFT),
             'price' => $this->base_price,
             'quantity' => $this->quantity,
-            'attributes' => [
+            'attributes' => array_filter([
                 'width' => $this->width,
                 'height' => $this->height,
                 'depth' => $this->depth,
-                'volume' => $volume,
+                'volume' => $volume > 0 ? $volume : null,
                 'framing' => $this->framing,
-            ],
+            ]),
         ]);
 
-        return redirect('/admin/products');
+        return redirect('/admin/catalog/items');
     }
 
     public function with(): array
     {
         return [
-            'artists' => Artist::orderBy('name')->get(),
-            'groupedCategories' => Category::where('parent_id', 0)->with('children')->get(),
+            // Fetch all top-level accessory groups (parents) and their children
+            'accessoryGroups' => CatalogAccessory::where('parent_id', 0)->with('children')->get(),
         ];
     }
 }; ?>
 
 <div class="max-w-5xl mx-auto">
     <div class="mb-8">
-        <a href="/admin/products" class="text-sm text-gray-500 hover:text-gray-900 transition-colors">&larr; Back to
-            Catalog</a>
-        <h1 class="text-2xl font-light text-gray-900 mt-4">Add New Artwork</h1>
+        <a href="/admin/catalog/items" class="text-sm text-gray-500 hover:text-gray-900 transition-colors">&larr; Back to
+            Items</a>
+        <h1 class="text-2xl font-light text-gray-900 mt-4">Add New Catalog Item</h1>
     </div>
 
     <form wire:submit="save" class="flex flex-col lg:flex-row gap-8">
@@ -116,7 +113,7 @@ new #[Layout('components.layouts.admin')] class extends Component {
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Price (£)</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Base Price (£)</label>
                             <input wire:model="base_price" type="number" step="0.01"
                                 class="w-full border-gray-300 rounded-sm focus:ring-gray-900 focus:border-gray-900">
                             @error('base_price')
@@ -124,18 +121,25 @@ new #[Layout('components.layouts.admin')] class extends Component {
                             @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Quantity (Stock)</label>
-                            <input wire:model="quantity" type="number"
+                            <label class="block text-sm font-medium text-gray-700 mb-1">SKU (Optional)</label>
+                            <input wire:model="sku" type="text"
                                 class="w-full border-gray-300 rounded-sm focus:ring-gray-900 focus:border-gray-900">
-                            <p class="text-xs text-gray-500 mt-1">Use 1 for originals, -1 for unlimited.</p>
                         </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
+                        <input wire:model="quantity" type="number"
+                            class="w-full max-w-xs border-gray-300 rounded-sm focus:ring-gray-900 focus:border-gray-900">
+                        <p class="text-xs text-gray-500 mt-1">Use -1 for unlimited stock (e.g., digital downloads or
+                            print-on-demand).</p>
                     </div>
                 </div>
             </div>
 
             <div class="bg-white p-6 border border-gray-200 shadow-sm">
-                <h2 class="text-sm font-medium tracking-[0.1em] uppercase text-gray-900 mb-6">Physical Specifications
-                </h2>
+                <h2 class="text-sm font-medium tracking-[0.1em] uppercase text-gray-900 mb-6">Physical Attributes
+                    (Optional)</h2>
 
                 <div class="grid grid-cols-3 gap-4 mb-6">
                     <div>
@@ -163,53 +167,38 @@ new #[Layout('components.layouts.admin')] class extends Component {
             </div>
         </div>
 
-        <!-- Sidebar (Relationships) -->
+        <!-- Sidebar (Taxonomy) -->
         <div class="w-full lg:w-1/3 space-y-8">
 
-            <!-- Actions -->
             <div class="bg-white p-6 border border-gray-200 shadow-sm">
                 <button type="submit"
                     class="w-full bg-gray-900 text-white px-4 py-3 text-xs font-medium tracking-[0.1em] uppercase hover:bg-black transition-colors cursor-pointer">
-                    Save Artwork
+                    Save Catalog Item
                 </button>
             </div>
 
-            <!-- Artists -->
+            <!-- Dynamic Accessory Groups -->
             <div class="bg-white p-6 border border-gray-200 shadow-sm">
-                <h2 class="text-sm font-medium tracking-[0.1em] uppercase text-gray-900 mb-4">Artists</h2>
-                <div class="space-y-2 max-h-48 overflow-y-auto">
-                    @foreach ($artists as $artist)
-                        <label class="flex items-center">
-                            <input wire:model="selectedArtists" value="{{ $artist->id }}" type="checkbox"
-                                class="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900 cursor-pointer">
-                            <span class="ml-2 text-sm text-gray-700">{{ $artist->name }}</span>
-                        </label>
-                    @endforeach
-                </div>
-                @error('selectedArtists')
-                    <span class="text-red-500 text-xs mt-2 block">{{ $message }}</span>
-                @enderror
-            </div>
-
-            <!-- Categories -->
-            <div class="bg-white p-6 border border-gray-200 shadow-sm">
-                <h2 class="text-sm font-medium tracking-[0.1em] uppercase text-gray-900 mb-4">Categories</h2>
-                <div class="space-y-6 max-h-96 overflow-y-auto">
-                    @foreach ($groupedCategories as $parent)
-                        <div>
-                            <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                                {{ $parent->title }}</h3>
-                            <div class="space-y-2">
-                                @foreach ($parent->children as $category)
-                                    <label class="flex items-center">
-                                        <input wire:model="selectedCategories" value="{{ $category->id }}"
-                                            type="checkbox"
-                                            class="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900 cursor-pointer">
-                                        <span class="ml-2 text-sm text-gray-700">{{ $category->title }}</span>
-                                    </label>
-                                @endforeach
+                <h2 class="text-sm font-medium tracking-[0.1em] uppercase text-gray-900 mb-4">Accessories & Tags</h2>
+                <div class="space-y-6 max-h-[600px] overflow-y-auto pr-2">
+                    @foreach ($accessoryGroups as $group)
+                        @if ($group->children->count() > 0)
+                            <div>
+                                <h3
+                                    class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 border-b border-gray-100 pb-1">
+                                    {{ $group->title }}</h3>
+                                <div class="space-y-2 mt-2">
+                                    @foreach ($group->children as $accessory)
+                                        <label class="flex items-center">
+                                            <input wire:model="selectedAccessories" value="{{ $accessory->id }}"
+                                                type="checkbox"
+                                                class="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900 cursor-pointer">
+                                            <span class="ml-2 text-sm text-gray-700">{{ $accessory->title }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
                             </div>
-                        </div>
+                        @endif
                     @endforeach
                 </div>
             </div>

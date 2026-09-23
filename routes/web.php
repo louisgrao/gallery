@@ -2,14 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 
+Route::livewire('/', 'page-renderer', ['slug' => 'catalog']);
+Route::livewire('/pages/{slug}', 'page-renderer');
 Route::livewire('/', 'home-page');
-Route::livewire('/products', 'product-catalog');
-Route::livewire('/products/{slug}', 'product-detail'); 
-Route::livewire('/artists', 'artist-directory');
-Route::livewire('/artists/{slug}', 'artist-profile');
 Route::livewire('/cart', 'cart-page');
 
 Route::prefix('admin')->group(function () {
-    Route::livewire('/products', 'admin-product-list');
-    Route::livewire('/products/create', 'admin-product-create'); 
+    Route::livewire('/catalog/items', 'admin-catalog-item-list');
+    Route::livewire('/catalog/items/create', 'admin-catalog-item-create');
 });

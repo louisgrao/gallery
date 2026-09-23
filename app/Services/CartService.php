@@ -2,25 +2,21 @@
 
 namespace App\Services;
 
-use App\Models\ProductVariant;
+use App\Models\CatalogVariant;
 use Illuminate\Support\Facades\Session;
 
 class CartService
 {
     private string $sessionKey = 'gallery_cart';
 
-    /**
-     * Add a variant to the cart. 
-     * Returns false if the requested quantity exceeds available stock.
-     */
-    public function add(ProductVariant $variant, int $amount = 1): bool
+    public function add(CatalogVariant $variant, int $amount = 1): bool
     {
         $cart = Session::get($this->sessionKey, []);
 
         $currentQuantity = isset($cart[$variant->id]) ? $cart[$variant->id]['quantity'] : 0;
         $requestedQuantity = $currentQuantity + $amount;
 
-        // Verify stock limits (quantity > -1 means strictly tracked inventory)
+        // Check inventory limits (-1 indicates unlimited stock)
         if ($variant->quantity > -1 && $requestedQuantity > $variant->quantity) {
             return false; 
         }
@@ -28,13 +24,15 @@ class CartService
         if (isset($cart[$variant->id])) {
             $cart[$variant->id]['quantity'] = $requestedQuantity;
         } else {
+            // Only load the relationships necessary for the cart display
+            $variant->loadMissing('item.media');
+            
             $cart[$variant->id] = [
-                'product_id' => $variant->product_id,
+                'catalog_item_id' => $variant->catalog_item_id,
                 'variant_id' => $variant->id,
-                'title' => $variant->product->title,
-                'artist' => $variant->product->artists->pluck('name')->join(', '),
+                'title' => $variant->item->title,
                 'price' => $variant->price,
-                'image' => $variant->product->media->first()?->full_path,
+                'image' => $variant->item->media->first()?->full_path,
                 'quantity' => $amount,
             ];
         }
@@ -44,9 +42,6 @@ class CartService
         return true;
     }
 
-    /**
-     * Remove a specific item from the cart.
-     */
     public function remove(int $variantId): void
     {
         $cart = Session::get($this->sessionKey, []);
@@ -57,17 +52,11 @@ class CartService
         }
     }
 
-    /**
-     * Retrieve all items currently in the cart.
-     */
     public function getItems(): array
     {
         return Session::get($this->sessionKey, []);
     }
 
-    /**
-     * Calculate the total monetary value of the cart.
-     */
     public function getTotal(): float|int
     {
         $items = $this->getItems();
@@ -77,17 +66,11 @@ class CartService
         }, 0);
     }
 
-    /**
-     * Get the total number of unique items in the cart.
-     */
     public function getCount(): int
     {
         return count($this->getItems());
     }
 
-    /**
-     * Empty the cart entirely.
-     */
     public function clear(): void
     {
         Session::forget($this->sessionKey);

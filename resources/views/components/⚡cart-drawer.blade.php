@@ -76,17 +76,19 @@ new class extends Component {
                                         <div class="ml-4 flex flex-1 flex-col">
                                             <div>
                                                 <div class="flex justify-between text-sm font-medium text-gray-900">
-                                                    <h3><a
-                                                            href="/products/{{ App\Models\Product::find($item['product_id'])->url_slug }}">{{ $item['title'] }}</a>
+                                                    <h3>
+                                                        <a
+                                                            href="/items/{{ App\Models\CatalogItem::find($item['catalog_item_id'])?->url_slug }}">
+                                                            {{ $item['title'] }}
+                                                        </a>
                                                     </h3>
                                                     <p class="ml-4">£{{ number_format($item['price']) }}</p>
                                                 </div>
-                                                <p class="mt-1 text-sm text-gray-500">{{ $item['artist'] }}</p>
                                             </div>
                                             <div class="flex flex-1 items-end justify-between text-sm">
                                                 <p class="text-gray-500">Qty {{ $item['quantity'] }}</p>
                                                 <button wire:click="removeItem({{ $id }})" type="button"
-                                                    class="font-medium text-gray-400 hover:text-gray-900 transition-colors uppercase tracking-widest text-[10px]">Remove</button>
+                                                    class="font-medium text-gray-400 hover:text-gray-900 transition-colors uppercase tracking-widest text-[10px] cursor-pointer">Remove</button>
                                             </div>
                                         </div>
                                     </li>

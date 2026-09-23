@@ -18,9 +18,9 @@
             <nav class="flex-1 overflow-y-auto py-4">
                 <ul class="space-y-1">
                     <li>
-                        <a href="/admin/products"
+                        <a href="/admin/catalog/items"
                             class="block px-6 py-3 text-sm text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">
-                            Artwork Catalog
+                            Catalog Items
                         </a>
                     </li>
                     <li>

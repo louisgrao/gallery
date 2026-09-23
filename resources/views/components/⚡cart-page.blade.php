@@ -49,16 +49,17 @@ new class extends Component {
                                 <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}"
                                     class="h-full w-full object-cover">
                             </div>
-
                             <div class="ml-6 flex flex-1 flex-col justify-between">
                                 <div>
                                     <div class="flex justify-between font-medium text-gray-900 mb-2">
-                                        <h3 class="text-lg md:text-xl font-light"><a
-                                                href="/products/{{ Product::find($item['product_id'])->url_slug }}">{{ $item['title'] }}</a>
+                                        <h3 class="text-lg md:text-xl font-light">
+                                            <a
+                                                href="/items/{{ CatalogItem::find($item['catalog_item_id'])?->url_slug }}">
+                                                {{ $item['title'] }}
+                                            </a>
                                         </h3>
                                         <p class="text-lg font-light ml-4">£{{ number_format($item['price']) }}</p>
                                     </div>
-                                    <p class="text-sm text-gray-500">{{ $item['artist'] }}</p>
                                 </div>
 
                                 <div class="flex flex-1 items-end justify-between">
